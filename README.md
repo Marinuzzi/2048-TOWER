@@ -66,4 +66,6 @@ Quando vinci, la torre si mostra automaticamente nella sua bellezza! ✨
 
 **Creato da Francesco Marinuzzi, Ph.D.** 🎓
 
-[🏗️ Repository GitHub](https://github.com/Marinuzzi/2048-TOWER)
+🏗️ **Repository GitHub**: [https://github.com/Marinuzzi/2048-TOWER](https://github.com/Marinuzzi/2048-TOWER)
+
+> **Nota**: Se il link GitHub non funziona, il repository potrebbe essere ancora in fase di sincronizzazione. Prova a ricaricare la pagina dopo qualche minuto.
