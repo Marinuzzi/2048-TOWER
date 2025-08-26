@@ -3,11 +3,17 @@
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/node",
+      "use": "@vercel/static",
       "config": {
         "buildCommand": "npm run build",
         "outputDirectory": "dist"
       }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
