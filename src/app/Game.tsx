@@ -424,7 +424,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                         }, 100);
                       }
                     }}
-                    className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-4 rounded-lg shadow-md transition-all duration-200 font-bold border border-gray-300"
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-4 rounded-lg shadow-md transition-all duration-200 font-bold border border-red-400"
                     title="View Tower"
                     style={{ aspectRatio: '1' }}
                   >
