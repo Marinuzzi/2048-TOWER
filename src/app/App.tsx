@@ -43,6 +43,35 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Cambia lo sfondo del body quando si mostra la torre
+  useEffect(() => {
+    if (showingTower) {
+      document.body.style.backgroundColor = '#0f172a'; // bg-slate-900 (blu scuro)
+      document.body.style.transition = 'background-color 0.7s';
+    } else {
+      document.body.style.backgroundColor = '#000000'; // bg-black
+      document.body.style.transition = 'background-color 0.7s';
+    }
+    
+    return () => {
+      document.body.style.backgroundColor = '#000000';
+      document.body.style.transition = '';
+    };
+  }, [showingTower]);
+
+  // Ascolta l'evento di chiusura della vista torre dal componente TowerApp
+  useEffect(() => {
+    const handleTowerViewClosed = () => {
+      setShowingTower(false);
+    };
+
+    window.addEventListener('towerViewClosed', handleTowerViewClosed);
+    
+    return () => {
+      window.removeEventListener('towerViewClosed', handleTowerViewClosed);
+    };
+  }, []);
+
 
 
   return (
@@ -64,18 +93,7 @@ const App: React.FC = () => {
         </div>
       </div>
       
-      {/* Pulsante "Torna al Gioco" sempre visibile quando si è nella vista torre */}
-      {showingTower && (
-        <div className="absolute top-4 left-4 z-30">
-          <button
-            onClick={() => setShowingTower(false)}
-            className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-4 py-4 rounded-lg shadow-lg font-bold transition-all duration-200 transform hover:scale-105 border border-gray-300"
-            style={{ aspectRatio: '1' }}
-          >
-            🎮
-          </button>
-        </div>
-      )}
+      {/* Bottone "Torna al Gioco" ora gestito direttamente da TowerApp */}
     </div>
   );
 };

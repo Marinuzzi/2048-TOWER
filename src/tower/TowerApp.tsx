@@ -762,6 +762,11 @@ const TowerApp: React.FC<TowerAppProps> = ({ showTowerView: propShowTowerView = 
         ctx.fillStyle = '#D2691E';
         ctx.fillText('VICTORY!', segmentX + segmentWidth/2, y + segmentHeight/2 + 10);
         
+        // Firma dell'autore sotto VICTORY!
+        ctx.font = 'italic 8px serif';
+        ctx.fillStyle = '#F4A460'; // Colore giallo chiaro simile allo sfondo giallo
+        ctx.fillText('A game by Francesco Marinuzzi, Ph.D.', segmentX + segmentWidth/2, y + segmentHeight/2 + 25);
+        
         // Reset shadow
         ctx.shadowBlur = 0;
         break;
@@ -825,7 +830,11 @@ const TowerApp: React.FC<TowerAppProps> = ({ showTowerView: propShowTowerView = 
     canvas.style.height = rect.height + 'px';
 
     // Clear canvas
-    ctx.fillStyle = '#f8f3ea'; // Background color dalle specifiche
+    if (showTowerView) {
+      ctx.fillStyle = '#0f172a'; // Background blu scuro per la vista torre
+    } else {
+      ctx.fillStyle = '#1e293b'; // Background blu medio per la vista gioco
+    }
     ctx.fillRect(0, 0, rect.width, rect.height);
 
     if (segments.length === 0) return;
@@ -971,8 +980,33 @@ const TowerApp: React.FC<TowerAppProps> = ({ showTowerView: propShowTowerView = 
         style={{ pointerEvents: 'none' }}
       />
       
-      {/* Controlli UI rimossi - ora gestiti dal pannello principale del gioco */}
-
+      {/* Bottone console per tornare al gioco - solo visibile in modalità torre */}
+      {propShowTowerView && (
+        <button
+          onClick={() => {
+            // Reset della vista torre per tornare al gioco
+            setShowTowerView(false);
+            // Emetti un evento per notificare il componente padre
+            window.dispatchEvent(new CustomEvent('towerViewClosed'));
+          }}
+          className="absolute top-4 left-4 z-30 bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
+          title="Torna al gioco"
+        >
+          <svg 
+            className="w-6 h-6" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" 
+            />
+          </svg>
+        </button>
+      )}
 
     </div>
   );

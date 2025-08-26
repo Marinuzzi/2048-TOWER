@@ -312,7 +312,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   // Funzione per ottenere i colori basati sul valore (zen ed eleganti)
   const getTileStyle = (value: number) => {
     const styles: Record<number, string> = {
-      0: 'bg-gray-100 text-transparent border border-gray-200',
+      0: 'bg-white/40 backdrop-blur-none text-transparent border border-gray-200/50 shadow-lg',
       2: 'bg-yellow-100 text-yellow-800 tile-elegant',
       4: 'bg-yellow-200 text-yellow-900 tile-elegant',
       8: 'bg-orange-200 text-orange-900 tile-elegant',
@@ -348,11 +348,11 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           {/* Score, Best e New Game centrati con la scacchiera */}
           <div className="flex justify-center items-center mb-6">
             <div className="flex space-x-3">
-              <div className="bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-orange-200">
+              <div className="bg-white/40 backdrop-blur-none text-orange-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-orange-200/50 shadow-lg">
                 <div className="text-xs font-medium text-orange-600 uppercase tracking-wide">Score</div>
                 <div className="text-xl font-black text-orange-900">{score}</div>
               </div>
-              <div className="bg-gradient-to-br from-red-100 to-orange-100 text-red-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-red-200">
+              <div className="bg-white/40 backdrop-blur-none text-red-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-red-200/50 shadow-lg">
                 <div className="text-xs font-medium text-red-600 uppercase tracking-wide">Best</div>
                 <div className="text-xl font-black text-red-900">{highScore}</div>
               </div>
@@ -385,7 +385,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               
               <button
                 onClick={resetGame}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-md transition-all duration-200 font-bold"
+                className="bg-white/40 backdrop-blur-none hover:bg-white/60 text-green-800 px-6 py-2 rounded-lg shadow-lg transition-all duration-200 font-bold border border-green-200/50"
               >
                 New
               </button>
@@ -446,8 +446,8 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           {speedMessage && (
             <div className={`text-sm font-bold mb-2 p-2 rounded-lg ${
               speedMessage.includes('Nuar a rí-han') 
-                ? 'bg-green-100 text-green-800 border border-green-300' 
-                : 'bg-red-100 text-red-800 border border-red-300'
+                ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' 
+                : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
             }`}>
               {speedMessage}
             </div>
@@ -484,7 +484,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         {/* Game Over/Win Overlay */}
         {(gameOver || gameWon) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4">
+            <div className="bg-gray-100 rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4">
               <h2 className={`text-4xl font-bold mb-4 ${gameWon ? 'text-amber-800' : 'text-red-500'}`}>
                 {gameWon ? 'YOU WIN! 🎉' : 'GAME OVER! 😔'}
               </h2>
