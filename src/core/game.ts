@@ -384,6 +384,16 @@ export class Game2048Engine {
     this.lastMaxTile = 0;
   }
 
+  // Metodo pubblico per ottenere il tempo di inizio del gioco
+  getGameStartTime(): number | undefined {
+    return this.milestoneStartTimes.get(0);
+  }
+
+  // Metodo pubblico per ottenere il tempo di inizio di un milestone specifico
+  getMilestoneStartTime(milestone: number): number | undefined {
+    return this.milestoneStartTimes.get(milestone);
+  }
+
   // Controlla se un milestone merita il bonus velocità
   checkSpeedBonus(milestone: number): boolean {
     console.log(`🔍 CHECK SPEED BONUS per milestone ${milestone}`);

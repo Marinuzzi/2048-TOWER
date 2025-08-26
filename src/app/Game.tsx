@@ -38,14 +38,58 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   const [gameOver, setGameOver] = useState(false);
   const [speedMessage, setSpeedMessage] = useState(''); // Messaggio per bonus/penalità velocità
   const [gameTime, setGameTime] = useState(0); // Timer del gioco
+  const [lastMilestoneTime, setLastMilestoneTime] = useState(0); // Tempo dall'ultimo milestone
+  const [lastMilestoneReached, setLastMilestoneReached] = useState(0); // Timestamp dell'ultimo milestone raggiunto
   const [showingTower, setShowingTower] = useState(false); // Stato vista torre
+  
+  // Sistema anti-spam per prevenire l'hacking
+  const [moveTimestamps, setMoveTimestamps] = useState<number[]>([]); // Timestamp delle ultime mosse
+  const [spamWarning, setSpamWarning] = useState(''); // Messaggio di avvertimento spam
 
   // TEST: Log dello stato della griglia
   console.log('🎮 Stato griglia:', grid);
   console.log('🎮 Dimensione griglia:', grid?.length);
 
+  // Funzione per controllare lo spam delle frecce
+  const checkSpam = useCallback((direction: string): boolean => {
+    const now = Date.now();
+    const oneSecondAgo = now - 1000;
+    
+    // Aggiungi il timestamp della mossa corrente
+    const newTimestamps = [...moveTimestamps, now];
+    
+    // Mantieni solo i timestamp dell'ultimo secondo
+    const recentMoves = newTimestamps.filter(timestamp => timestamp > oneSecondAgo);
+    
+    // Aggiorna lo state
+    setMoveTimestamps(recentMoves);
+    
+    const movesPerSecond = recentMoves.length;
+    
+    // Se da 6 a 14 mosse/secondo, penalizza (spam)
+    if (movesPerSecond >= 6 && movesPerSecond <= 14) {
+      setSpamWarning(`🚨 Spam detected! ${movesPerSecond} moves/second - Penalty applied!`);
+      setTimeout(() => setSpamWarning(''), 3000);
+      return true; // Penalità applicata
+    }
+    
+    // Se più di 14 mosse/secondo, giocatore esperto - nessuna penalità
+    if (movesPerSecond > 14) {
+      setSpamWarning('⚡'); // Solo icona fulmine
+      setTimeout(() => setSpamWarning(''), 1500);
+      return false; // Nessuna penalità
+    }
+    
+    // Reset del messaggio se tutto ok
+    if (spamWarning) setSpamWarning('');
+    return false; // Nessuna penalità
+  }, [moveTimestamps, spamWarning]);
+
   const handleMove = useCallback((direction: string) => {
     if (gameOver || gameWon || !gameEngineRef.current) return;
+
+    // Controlla lo spam prima di processare la mossa
+    const isSpamPenalty = checkSpam(direction);
 
     try {
       const result = gameEngineRef.current.processMove(grid, direction, score);
@@ -55,6 +99,12 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         
         // Controlla se abbiamo raggiunto un milestone di espansione
         const maxTile = gameEngineRef.current!.getMaxTile(finalGrid);
+        
+        // Traccia quando viene raggiunto un nuovo milestone per il timer
+        if (maxTile >= 32 && maxTile > gameEngineRef.current!.getMaxTile(grid)) {
+          setLastMilestoneReached(Date.now());
+          setLastMilestoneTime(0); // Reset del timer milestone quando si raggiunge un nuovo milestone
+        }
         
         // SOLO per i milestone di espansione (64 e 256) controlla la velocità! 🚨
         if ([64, 256].includes(maxTile) && gameEngineRef.current) {
@@ -84,8 +134,11 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                   console.log(`⚡ BONUS VELOCITÀ! Griglia espansa a ${gameEngineRef.current.getGridSize()}x${gameEngineRef.current.getGridSize()} e pulita!`);
                   
                   // Messaggio di congratulazioni per la velocità! 🐰
-                  setSpeedMessage(`🐰 Che lepre! meriti più spazio! ⚡✨`);
-                  setTimeout(() => setSpeedMessage(''), 5000);
+                  // SOLO per milestone di espansione (64 e 256)
+                  if ([64, 256].includes(maxTile)) {
+                    setSpeedMessage(`🌙🌀🗿 Nuar a rí-han na skà-hna, lah-nee-un an clawr fayn. ⚡✨`);
+                    setTimeout(() => setSpeedMessage(''), 5000);
+                  }
                 } catch (error) {
                   console.error(`🚨 ERRORE durante espansione/pulizia:`, error);
                   setSpeedMessage(`🚨 ERRORE ESPANSIONE! Il gioco si è bloccato!`);
@@ -116,8 +169,11 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                 console.log(`🚨 PENALITÀ VELOCITÀ! Aggiunte ${penaltyTiles} tile casuali per chi va lento!`);
                 
                 // Messaggio divertente per giocatori lenti
-                setSpeedMessage(`🐢 Quante tartarughe vedo... lo spazio così non si espande! 🐢`);
-                setTimeout(() => setSpeedMessage(''), 5000);
+                // SOLO per milestone di espansione (64 e 256)
+                if ([64, 256].includes(maxTile)) {
+                  setSpeedMessage(`🌴☀️🌊 Dan lan-druà seré, i trov letán san-fèn 🐢`);
+                  setTimeout(() => setSpeedMessage(''), 5000);
+                }
                 
                 // AGGIUNGI MILESTONE ALLA TORRE SENZA AURA DORATA (lento)! 🏰🐢
                 if ((window as any).addMilestone) {
@@ -140,13 +196,31 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           }
         }
         
+        // Applica penalità per spam se necessario
+        if (isSpamPenalty && result.moved) {
+          console.log(`🚨 PENALITÀ SPAM: Aggiunte 4 tile extra per spam rilevato!`);
+          // Penalità più severa: 4 tile extra per rendere lo spam controproducente
+          for (let i = 0; i < 4; i++) {
+            finalGrid = gameEngineRef.current.addRandomNumber(finalGrid);
+          }
+        }
+        
         console.log(`🎮 Risultato mossa: moved=${result.moved}, gameOver=${result.gameOver}, gameWon=${result.gameWon}, score=${result.newScore}`);
         console.log(`📏 Dimensione griglia finale: ${finalGrid.length}x${finalGrid.length}`);
         
+        // Dopo aver applicato eventuali penalità, controlla se il gioco è finito
+        const finalGameOver = gameEngineRef.current.isGameOver(finalGrid);
+        const finalGameWon = gameEngineRef.current.hasWon(finalGrid);
+        
         setGrid(finalGrid);
         setScore(result.newScore);
-        setGameWon(result.gameWon);
-        setGameOver(result.gameOver);
+        setGameWon(finalGameWon);
+        setGameOver(finalGameOver);
+        
+        // Debug: mostra stato del gioco
+        if (finalGameOver) {
+          console.log(`🚨 GAME OVER RILEVATO! Griglia piena o impossibile continuare!`);
+        }
         
         // Debug: mostra stato del gioco
         if (result.gameOver) {
@@ -203,6 +277,52 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     }
   }, [gameWon]);
 
+  // Timer che si aggiorna ogni secondo per mostrare i tempi in tempo reale
+  useEffect(() => {
+    if (gameOver || gameWon) return; // Non aggiornare se il gioco è finito
+    
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const gameStartTime = gameEngineRef.current?.getGameStartTime();
+      
+      if (gameStartTime) {
+        // Tempo totale dall'inizio del gioco
+        const totalTime = Math.floor((now - gameStartTime) / 1000);
+        setGameTime(totalTime);
+        
+        // Tempo dall'ultimo milestone raggiunto (tempo reale)
+        const maxTile = gameEngineRef.current?.getMaxTile(grid);
+        if (maxTile && maxTile >= 32) {
+          // Se abbiamo un timestamp dell'ultimo milestone, calcola il tempo trascorso
+          if (lastMilestoneReached > 0) {
+            const timeSinceLastMilestone = Math.floor((now - lastMilestoneReached) / 1000);
+            setLastMilestoneTime(timeSinceLastMilestone);
+          }
+        }
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [grid, gameOver, gameWon]);
+
+  // Reset del timer dall'ultimo milestone quando si raggiunge un nuovo milestone
+  useEffect(() => {
+    if (gameEngineRef.current) {
+      const maxTile = gameEngineRef.current.getMaxTile(grid);
+      if (maxTile >= 32) {
+        // NON resettare più il timer milestone - deve continuare a contare
+        // setLastMilestoneTime(0); // RIMOSSO!
+      }
+    }
+  }, [grid]);
+
+  // Inizializza il timer del primo milestone quando il gioco inizia
+  useEffect(() => {
+    if (gameEngineRef.current && gameEngineRef.current.getGameStartTime()) {
+      setLastMilestoneReached(gameEngineRef.current.getGameStartTime()!);
+    }
+  }, []);
+
   const resetGame = () => {
     // Resetta il motore a griglia 4x4 FORZATA
     const events: GameEvents = {
@@ -220,6 +340,11 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     setGameWon(false);
     setGameOver(false);
     setSpeedMessage(''); // Reset del messaggio di velocità
+    setGameTime(0); // Reset del timer totale
+    setLastMilestoneTime(0); // Reset del timer dall'ultimo milestone
+    setLastMilestoneReached(0); // Reset del timestamp dell'ultimo milestone
+    setMoveTimestamps([]); // Reset del sistema anti-spam
+    setSpamWarning(''); // Reset del messaggio spam
     
     console.log(`🔄 Gioco resettato! Griglia: ${newGrid.length}x${newGrid.length}`);
     
@@ -249,10 +374,10 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   };
 
   const getFontSize = (value: number) => {
-    if (value >= 1024) return 'text-xl';
-    if (value >= 128) return 'text-2xl';
-    if (value >= 16) return 'text-3xl';
-    return 'text-4xl';
+    if (value >= 1024) return 'text-2xl';
+    if (value >= 128) return 'text-3xl';
+    if (value >= 16) return 'text-4xl';
+    return 'text-5xl';
   };
 
   return (
@@ -267,7 +392,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           <div className="flex justify-between items-center mb-4">
             <div className="flex space-x-3">
               <div className="bg-gradient-to-r from-orange-400 to-red-400 text-white px-4 py-3 rounded-xl shadow-lg">
-                <div className="text-xs font-medium">PUNTEGGIO</div>
+                <div className="text-xs font-medium">SCORE</div>
                 <div className="text-xl font-bold">{score}</div>
               </div>
               <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-3 rounded-xl shadow-lg">
@@ -279,7 +404,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               onClick={resetGame}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold"
             >
-              NUOVO GIOCO
+              NEW GAME
             </button>
           </div>
         </div>
@@ -319,22 +444,44 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         {/* Timer e Controlli */}
         <div className="text-center text-gray-600 mb-4">
           {/* Timer del gioco */}
-          <div className="mb-3">
+          <div className="mb-3 space-y-2">
             <div className="text-lg font-bold text-orange-600">
-              ⏱️ Tempo di gioco: {Math.floor((Date.now() - (gameEngineRef.current?.milestoneStartTimes?.get(0) || Date.now())) / 1000)}s
+              ⏱️ Total Time: {gameTime}s
             </div>
+            {lastMilestoneTime > 0 && (
+              <div className="text-md font-bold text-amber-800">
+                ⚡ Since Last Level: {lastMilestoneTime}s
+              </div>
+            )}
           </div>
           
-          <p className="text-sm mb-2">Usa le frecce della tastiera per muovere le tessere</p>
+          <p className="text-sm mb-2">Use arrow keys to move tiles</p>
         
           {/* Messaggio di velocità (bonus o penalità) */}
           {speedMessage && (
             <div className={`text-sm font-bold mb-2 p-2 rounded-lg ${
-              speedMessage.includes('Che lepre') 
+              speedMessage.includes('Nuar a rí-han') 
                 ? 'bg-green-100 text-green-800 border border-green-300' 
                 : 'bg-red-100 text-red-800 border border-red-300'
             }`}>
               {speedMessage}
+            </div>
+          )}
+          
+          {/* Messaggio spam o icona fulmine per giocatore esperto */}
+          {spamWarning && (
+            <div className="text-center mb-2">
+              {spamWarning.includes('Spam detected') ? (
+                // Messaggio spam con stile rosso
+                <div className="text-sm font-bold p-2 rounded-lg bg-red-100 text-red-800 border border-red-300">
+                  {spamWarning}
+                </div>
+              ) : (
+                // Solo icona fulmine per giocatore esperto
+                <div className="text-2xl font-bold text-yellow-600 animate-pulse">
+                  {spamWarning}
+                </div>
+              )}
             </div>
           )}
           
@@ -383,7 +530,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               }}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 font-bold"
             >
-              {showingTower ? '🎮 Torna al Gioco' : '🏰 Vedi Torre'}
+              {showingTower ? '🎮 Back to Game' : '🏰 View Tower'}
             </button>
             <button
               onClick={() => {
@@ -393,7 +540,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               }}
               className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 border-2 border-yellow-500 px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 font-bold"
             >
-              📤 Share Torre
+              📤 Share Tower
             </button>
           </div>
         </div>
@@ -402,17 +549,17 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         {(gameOver || gameWon) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4">
-              <h2 className={`text-4xl font-bold mb-4 ${gameWon ? 'text-yellow-500' : 'text-red-500'}`}>
-                {gameWon ? 'HAI VINTO! 🎉' : 'GAME OVER! 😔'}
+              <h2 className={`text-4xl font-bold mb-4 ${gameWon ? 'text-amber-800' : 'text-red-500'}`}>
+                {gameWon ? 'YOU WIN! 🎉' : 'GAME OVER! 😔'}
               </h2>
               <p className="text-gray-600 mb-6 text-lg">
-                Punteggio finale: <span className="font-bold text-orange-600">{score}</span>
+                Final Score: <span className="font-bold text-orange-600">{score}</span>
               </p>
               
               {gameWon && (
                 <div className="mb-6">
-                  <p className="text-lg text-purple-600 font-bold mb-4">
-                    🏰 La tua torre è completa! Guardala nella sua bellezza! ✨
+                  <p className="text-lg text-amber-800 font-bold mb-4">
+                    🏰 Your tower is complete! Admire its beauty! ✨
                   </p>
                   <button
                     onClick={() => {
@@ -420,9 +567,9 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                         (window as any).setTowerView(true);
                       }
                     }}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg mb-3 w-full"
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg mb-3 w-full"
                   >
-                    🏰 Vedi la Tua Torre
+                    🏰 View Your Tower
                   </button>
                 </div>
               )}
@@ -431,7 +578,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                 onClick={resetGame}
                 className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg"
               >
-                RIPROVA
+                TRY AGAIN
               </button>
             </div>
           </div>

@@ -74,9 +74,9 @@ const App: React.FC = () => {
         <div className="absolute top-4 left-4 z-30">
           <button
             onClick={() => setShowingTower(false)}
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-2 rounded-lg shadow-lg font-bold transition-all duration-200 transform hover:scale-105"
+            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-lg shadow-lg font-bold transition-all duration-200 transform hover:scale-105"
           >
-            🎮 Torna al Gioco
+            🎮 Back to Game
           </button>
         </div>
       )}
