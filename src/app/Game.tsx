@@ -442,7 +442,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
             </div>
 
             {/* Grid */}
-            <div className="p-6 rounded-2xl mb-6">
+            <div className="p-6 rounded-2xl mb-6" id="grid-container">
               <div 
                 className="grid gap-3 transition-all duration-300"
                 style={{ 
@@ -477,13 +477,29 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
             {/* Controlli */}
             <div className="text-center text-gray-600 mb-4">
               {/* Pulsanti delle frecce direzionali */}
-              <div className="flex flex-col items-center gap-1 mt-4 mb-4">
-                <button onClick={() => handleMove('ArrowUp')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬆️</button>
-                <div className="flex gap-16">
-                  <button onClick={() => handleMove('ArrowLeft')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬅️</button>
-                  <button onClick={() => handleMove('ArrowRight')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">➡️</button>
+              <div className="flex flex-col items-center gap-1 mt-4 mb-4 relative">
+                <button onClick={() => handleMove('ArrowUp')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50" style={{ width: 'calc((100% - 3rem)/2 + 1.5rem)' }}>⬆️</button>
+                <div className="grid w-full relative" style={{ 
+                    padding: '0 6px',
+                    gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
+                    gap: '0.75rem'
+                  }}>
+                  <button onClick={() => handleMove('ArrowLeft')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬅️</button>
+                  <div className="col-span-2 relative">
+                    <button 
+                      onClick={() => {
+                        const moves = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+                        const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                        handleMove(randomMove);
+                      }} 
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-yellow-400 hover:bg-yellow-500 text-xl rounded-full shadow-lg transition-all duration-200 border border-yellow-500 transform hover:scale-110"
+                    >
+                      🎲
+                    </button>
+                  </div>
+                  <button onClick={() => handleMove('ArrowRight')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">➡️</button>
                 </div>
-                <button onClick={() => handleMove('ArrowDown')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬇️</button>
+                <button onClick={() => handleMove('ArrowDown')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50" style={{ width: 'calc((100% - 3rem)/2 + 1.5rem)' }}>⬇️</button>
               </div>
 
               {/* Messaggio di velocità (bonus o penalità) */}
