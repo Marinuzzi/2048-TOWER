@@ -341,7 +341,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         {/* Header */}
         <div className="mb-6">
           <div className="mb-6">
-            <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048</h1>
+            <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048-T</h1>
             <p className="text-sm text-gray-400 italic font-light text-center mb-4">Ver. Tower by F. Marinuzzi, Ph.D.</p>
           </div>
           

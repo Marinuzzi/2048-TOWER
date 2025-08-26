@@ -755,8 +755,8 @@ const TowerApp: React.FC<TowerAppProps> = ({ showTowerView: propShowTowerView = 
         ctx.textAlign = 'center';
         
         // Testo che brilla
-        ctx.fillText('🏆 2048 🏆', segmentX + segmentWidth/2, y + segmentHeight/2 - 5);
-        ctx.strokeText('🏆 2048 🏆', segmentX + segmentWidth/2, y + segmentHeight/2 - 5);
+        ctx.fillText('🏆 2048-T 🏆', segmentX + segmentWidth/2, y + segmentHeight/2 - 5);
+        ctx.strokeText('🏆 2048-T 🏆', segmentX + segmentWidth/2, y + segmentHeight/2 - 5);
         
         ctx.font = 'bold 12px serif';
         ctx.fillStyle = '#D2691E';
