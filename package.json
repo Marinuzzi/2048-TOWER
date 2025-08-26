@@ -1,12 +1,12 @@
 {
-    "name": "2048-t",
+    "name": "2048-c",
     "version": "1.0.0",
     "type": "module",
     "description": "Un bellissimo gioco 2048 con palette di colori rossi e gialli",
-    "private": true,
+    "main": "index.js",
     "scripts": {
       "dev": "vite",
-      "build": "node ./node_modules/vite/bin/vite.js build",
+      "build": "vite build",
       "preview": "vite preview",
       "start": "vite preview"
     },
@@ -15,16 +15,15 @@
     "license": "MIT",
     "dependencies": {
       "react": "^18.2.0",
-      "react-dom": "^18.2.0",
-      "vite": "^4.4.5",
-      "@vitejs/plugin-react": "^4.0.3",
-      "typescript": "^5.0.2"
+      "react-dom": "^18.2.0"
     },
     "devDependencies": {
       "@types/react": "^18.2.15",
       "@types/react-dom": "^18.2.7",
+      "@vitejs/plugin-react": "^4.0.3",
       "autoprefixer": "^10.4.14",
       "postcss": "^8.4.27",
-      "tailwindcss": "^3.3.3"
+      "tailwindcss": "^3.3.3",
+      "vite": "^4.4.5"
     }
   }
