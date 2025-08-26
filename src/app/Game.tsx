@@ -479,25 +479,52 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               {/* Pulsanti delle frecce direzionali */}
               <div className="flex flex-col items-center gap-1 mt-4 mb-4 relative">
                 <button onClick={() => handleMove('ArrowUp')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50" style={{ width: 'calc((100% - 3rem)/2 + 1.5rem)' }}>⬆️</button>
-                <div className="grid w-full relative" style={{ 
-                    padding: '0 6px',
+                <div className="relative w-full" style={{ padding: '0 6px' }}>
+                  {/* Container che si adatta alla griglia */}
+                  <div className="grid gap-3" style={{ 
                     gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
-                    gap: '0.75rem'
+                    width: '100%',
+                    height: '48px',
+                    position: 'relative'
                   }}>
-                  <button onClick={() => handleMove('ArrowLeft')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬅️</button>
-                  <div className="col-span-2 relative">
+                    {/* Bottone sinistro ancorato alla prima colonna */}
+                    <button 
+                      onClick={() => handleMove('ArrowLeft')} 
+                      className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50"
+                      style={{ gridColumn: '1' }}
+                    >
+                      ⬅️
+                    </button>
+
+                    {/* Bottone destro ancorato all'ultima colonna */}
+                    <button 
+                      onClick={() => handleMove('ArrowRight')} 
+                      className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50"
+                      style={{ gridColumn: grid.length }}
+                    >
+                      ➡️
+                    </button>
+
+                    {/* Bottone centrale ancorato al centro esatto della griglia */}
                     <button 
                       onClick={() => {
                         const moves = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
                         const randomMove = moves[Math.floor(Math.random() * moves.length)];
                         handleMove(randomMove);
                       }} 
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-yellow-400 hover:bg-yellow-500 text-xl rounded-full shadow-lg transition-all duration-200 border border-yellow-500 transform hover:scale-110"
+                      className="w-10 h-10 bg-yellow-400 hover:bg-yellow-500 text-xl rounded-full shadow-lg transition-all duration-200 border border-yellow-500 transform hover:scale-110"
+                      style={{ 
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 10,
+                        margin: '0 auto'
+                      }}
                     >
                       🎲
                     </button>
                   </div>
-                  <button onClick={() => handleMove('ArrowRight')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">➡️</button>
                 </div>
                 <button onClick={() => handleMove('ArrowDown')} className="h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50" style={{ width: 'calc((100% - 3rem)/2 + 1.5rem)' }}>⬇️</button>
               </div>
