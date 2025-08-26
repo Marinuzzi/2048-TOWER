@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "description": "Un bellissimo gioco 2048 con palette di colori rossi e gialli",
-    "main": "index.js",
+    "private": true,
     "scripts": {
       "dev": "vite",
       "build": "vite build",
