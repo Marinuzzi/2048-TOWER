@@ -579,6 +579,16 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           )}
         </div>
       </div>
+
+      {/* Pulsanti delle frecce direzionali */}
+      <div className="controls">
+        <button onClick={() => handleMove('up')} className="arrow-button">⬆️</button>
+        <div>
+          <button onClick={() => handleMove('left')} className="arrow-button">⬅️</button>
+          <button onClick={() => handleMove('right')} className="arrow-button">➡️</button>
+        </div>
+        <button onClick={() => handleMove('down')} className="arrow-button">⬇️</button>
+      </div>
     </div>
   );
 };
