@@ -9,13 +9,10 @@ interface GameProps {
 const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   const gameEngineRef = useRef<Game2048Engine>();
   
-  // TEST: Aggiungi un log per verificare che il componente si renderizzi
-  console.log('🎮 Game component rendering...');
-  console.log('🎮 Props ricevute:', { onTileMerged: !!onTileMerged, onGameOver: !!onGameOver });
+
   
   // Inizializza il motore di gioco con gli eventi
   const initializeEngine = useCallback(() => {
-    console.log('🎮 Inizializzazione motore di gioco...');
     const events: GameEvents = {
       onTileMerged,
       onGameOver,
@@ -24,7 +21,6 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     // Avvia il timer per il primo milestone
     gameEngineRef.current.startGameTimer();
     const initialGrid = gameEngineRef.current.initializeGrid();
-    console.log(`🎮 Gioco inizializzato! Griglia: ${initialGrid.length}x${initialGrid.length}`);
     return initialGrid;
   }, [onTileMerged, onGameOver]);
 
@@ -40,15 +36,13 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   const [gameTime, setGameTime] = useState(0); // Timer del gioco
   const [lastMilestoneTime, setLastMilestoneTime] = useState(0); // Tempo dall'ultimo milestone
   const [lastMilestoneReached, setLastMilestoneReached] = useState(0); // Timestamp dell'ultimo milestone raggiunto
-  const [showingTower, setShowingTower] = useState(false); // Stato vista torre
+
   
   // Sistema anti-spam per prevenire l'hacking
   const [moveTimestamps, setMoveTimestamps] = useState<number[]>([]); // Timestamp delle ultime mosse
   const [spamWarning, setSpamWarning] = useState(''); // Messaggio di avvertimento spam
 
-  // TEST: Log dello stato della griglia
-  console.log('🎮 Stato griglia:', grid);
-  console.log('🎮 Dimensione griglia:', grid?.length);
+
 
   // Funzione per controllare lo spam delle frecce
   const checkSpam = useCallback((direction: string): boolean => {
@@ -114,99 +108,80 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
           if ((maxTile === 64 && currentSize === 4) || 
               (maxTile === 256 && currentSize === 5)) {
             
-            try {
-              // Controlla se merita il bonus velocità
-              console.log(`🔍 Controllo velocità per milestone ${maxTile}...`);
-              const isSpeedBonus = gameEngineRef.current.checkSpeedBonus(maxTile);
-              console.log(`⚡ Risultato controllo velocità: ${isSpeedBonus} per milestone ${maxTile}`);
-              
-              if (isSpeedBonus) {
-                // BONUS VELOCITÀ: Espansione + Pulizia! ⚡
-                console.log(`🔧 Inizio espansione griglia da ${gameEngineRef.current.getGridSize()}x${gameEngineRef.current.getGridSize()}`);
+                          try {
+                // Controlla se merita il bonus velocità
+                const isSpeedBonus = gameEngineRef.current.checkSpeedBonus(maxTile);
                 
-                try {
-                  finalGrid = gameEngineRef.current.expandGrid(finalGrid);
-                  console.log(`✅ Griglia espansa con successo! Nuova dimensione: ${gameEngineRef.current.getGridSize()}x${gameEngineRef.current.getGridSize()}`);
+                if (isSpeedBonus) {
+                  // BONUS VELOCITÀ: Espansione + Pulizia! ⚡
+                  try {
+                    finalGrid = gameEngineRef.current.expandGrid(finalGrid);
+                    finalGrid = gameEngineRef.current.cleanupLowTiles(finalGrid, maxTile === 64 ? 2 : 4);
+                    
+                    // Messaggio di congratulazioni per la velocità! 🐰
+                    // SOLO per milestone di espansione (64 e 256)
+                    if ([64, 256].includes(maxTile)) {
+                      setSpeedMessage(`🌙🌀🗿 Nuar a rí-han na skà-hna, lah-nee-un an clawr fayn. ⚡✨`);
+                      setTimeout(() => setSpeedMessage(''), 5000);
+                    }
+                  } catch (error) {
+                    console.error(`🚨 ERRORE durante espansione/pulizia:`, error);
+                    setSpeedMessage(`🚨 ERRORE ESPANSIONE! Il gioco si è bloccato!`);
+                    setTimeout(() => setSpeedMessage(''), 10000);
+                    return; // Non continuare se c'è un errore
+                  }
                   
-                  finalGrid = gameEngineRef.current.cleanupLowTiles(finalGrid, maxTile === 64 ? 2 : 4);
-                  console.log(`🧹 Pulizia completata!`);
+                  // AGGIUNGI MILESTONE ALLA TORRE CON AURA DORATA (veloce)! 🏰⚡
+                  if ((window as any).addMilestone) {
+                    (window as any).addMilestone(maxTile, true); // true = speedBonus (aura dorata)
+                  }
                   
-                  console.log(`⚡ BONUS VELOCITÀ! Griglia espansa a ${gameEngineRef.current.getGridSize()}x${gameEngineRef.current.getGridSize()} e pulita!`);
+                  // RIMUOVI il timer del milestone precedente DOPO aver controllato la velocità
+                  const previousMilestone = maxTile === 64 ? 32 : 128;
+                  if (gameEngineRef.current && (gameEngineRef.current as any).milestoneStartTimes) {
+                    (gameEngineRef.current as any).milestoneStartTimes.delete(previousMilestone);
+                  }
+                } else {
+                  // PENALITÀ VELOCITÀ: NO ESPANSIONE E NO TORRE! 🐢
+                  // Aggiungi più tile casuali per rendere il gioco più difficile
+                  const penaltyTiles = maxTile === 64 ? 4 : 6; // Ancora più tile per chi va lento
+                  for (let i = 0; i < penaltyTiles; i++) {
+                    finalGrid = gameEngineRef.current.addRandomNumber(finalGrid);
+                  }
                   
-                  // Messaggio di congratulazioni per la velocità! 🐰
+                  // Messaggio divertente per giocatori lenti
                   // SOLO per milestone di espansione (64 e 256)
                   if ([64, 256].includes(maxTile)) {
-                    setSpeedMessage(`🌙🌀🗿 Nuar a rí-han na skà-hna, lah-nee-un an clawr fayn. ⚡✨`);
+                    setSpeedMessage(`🌴☀️🌊 Dan lan-druà seré, i trov letán san-fèn 🐢`);
                     setTimeout(() => setSpeedMessage(''), 5000);
                   }
-                } catch (error) {
-                  console.error(`🚨 ERRORE durante espansione/pulizia:`, error);
-                  setSpeedMessage(`🚨 ERRORE ESPANSIONE! Il gioco si è bloccato!`);
-                  setTimeout(() => setSpeedMessage(''), 10000);
-                  return; // Non continuare se c'è un errore
-                }
-                
-                // AGGIUNGI MILESTONE ALLA TORRE CON AURA DORATA (veloce)! 🏰⚡
-                if ((window as any).addMilestone) {
-                  (window as any).addMilestone(maxTile, true); // true = speedBonus (aura dorata)
+                  
+                  // AGGIUNGI MILESTONE ALLA TORRE SENZA AURA DORATA (lento)! 🏰🐢
+                  if ((window as any).addMilestone) {
+                    (window as any).addMilestone(maxTile, false); // false = NO speedBonus (NO aura dorata)
+                  }
                 }
                 
                 // RIMUOVI il timer del milestone precedente DOPO aver controllato la velocità
                 const previousMilestone = maxTile === 64 ? 32 : 128;
                 if (gameEngineRef.current && (gameEngineRef.current as any).milestoneStartTimes) {
                   (gameEngineRef.current as any).milestoneStartTimes.delete(previousMilestone);
-                  console.log(`🗑️ Timer del milestone ${previousMilestone} rimosso dopo controllo velocità (veloce)`);
                 }
-              } else {
-                // PENALITÀ VELOCITÀ: NO ESPANSIONE E NO TORRE! 🐢
-                console.log(`🐢 PENALITÀ VELOCITÀ! Troppo lento per espandere la griglia!`);
-                
-                // Aggiungi più tile casuali per rendere il gioco più difficile
-                const penaltyTiles = maxTile === 64 ? 4 : 6; // Ancora più tile per chi va lento
-                for (let i = 0; i < penaltyTiles; i++) {
-                  finalGrid = gameEngineRef.current.addRandomNumber(finalGrid);
-                }
-                console.log(`🚨 PENALITÀ VELOCITÀ! Aggiunte ${penaltyTiles} tile casuali per chi va lento!`);
-                
-                // Messaggio divertente per giocatori lenti
-                // SOLO per milestone di espansione (64 e 256)
-                if ([64, 256].includes(maxTile)) {
-                  setSpeedMessage(`🌴☀️🌊 Dan lan-druà seré, i trov letán san-fèn 🐢`);
-                  setTimeout(() => setSpeedMessage(''), 5000);
-                }
-                
-                // AGGIUNGI MILESTONE ALLA TORRE SENZA AURA DORATA (lento)! 🏰🐢
-                if ((window as any).addMilestone) {
-                  (window as any).addMilestone(maxTile, false); // false = NO speedBonus (NO aura dorata)
-                  console.log(`🏰 Milestone ${maxTile} aggiunto alla torre SENZA aura dorata (giocatore lento)`);
-                }
+              } catch (error) {
+                console.error(`🚨 ERRORE durante l'espansione/pulizia:`, error);
+                setSpeedMessage(`🚨 ERRORE! Il gioco si è bloccato! Ricarica la pagina!`);
+                setTimeout(() => setSpeedMessage(''), 10000);
               }
-              
-              // RIMUOVI il timer del milestone precedente DOPO aver controllato la velocità
-              const previousMilestone = maxTile === 64 ? 32 : 128;
-              if (gameEngineRef.current && (gameEngineRef.current as any).milestoneStartTimes) {
-                (gameEngineRef.current as any).milestoneStartTimes.delete(previousMilestone);
-                console.log(`🗑️ Timer del milestone ${previousMilestone} rimosso dopo controllo velocità`);
-              }
-            } catch (error) {
-              console.error(`🚨 ERRORE durante l'espansione/pulizia:`, error);
-              setSpeedMessage(`🚨 ERRORE! Il gioco si è bloccato! Ricarica la pagina!`);
-              setTimeout(() => setSpeedMessage(''), 10000);
-            }
           }
         }
         
         // Applica penalità per spam se necessario
         if (isSpamPenalty && result.moved) {
-          console.log(`🚨 PENALITÀ SPAM: Aggiunte 4 tile extra per spam rilevato!`);
           // Penalità più severa: 4 tile extra per rendere lo spam controproducente
           for (let i = 0; i < 4; i++) {
             finalGrid = gameEngineRef.current.addRandomNumber(finalGrid);
           }
         }
-        
-        console.log(`🎮 Risultato mossa: moved=${result.moved}, gameOver=${result.gameOver}, gameWon=${result.gameWon}, score=${result.newScore}`);
-        console.log(`📏 Dimensione griglia finale: ${finalGrid.length}x${finalGrid.length}`);
         
         // Dopo aver applicato eventuali penalità, controlla se il gioco è finito
         const finalGameOver = gameEngineRef.current.isGameOver(finalGrid);
@@ -216,16 +191,6 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
         setScore(result.newScore);
         setGameWon(finalGameWon);
         setGameOver(finalGameOver);
-        
-        // Debug: mostra stato del gioco
-        if (finalGameOver) {
-          console.log(`🚨 GAME OVER RILEVATO! Griglia piena o impossibile continuare!`);
-        }
-        
-        // Debug: mostra stato del gioco
-        if (result.gameOver) {
-          console.log(`🚨 GAME OVER RILEVATO! Punteggio: ${result.newScore}`);
-        }
         
         // Aggiorna il record se necessario
         if (result.newScore > highScore) {
@@ -253,17 +218,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleMove]);
 
-  // Ascolta i cambiamenti della vista torre
-  useEffect(() => {
-    if ((window as any).setTowerView) {
-      // Sostituisci la funzione globale con la nostra
-      const originalSetTowerView = (window as any).setTowerView;
-      (window as any).setTowerView = (show: boolean) => {
-        setShowingTower(show);
-        originalSetTowerView(show);
-      };
-    }
-  }, []);
+
 
   // Mostra automaticamente la torre quando si vince
   useEffect(() => {
@@ -276,6 +231,8 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
       return () => clearTimeout(timer);
     }
   }, [gameWon]);
+
+
 
   // Timer che si aggiorna ogni secondo per mostrare i tempi in tempo reale
   useEffect(() => {
@@ -346,73 +303,100 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     setMoveTimestamps([]); // Reset del sistema anti-spam
     setSpamWarning(''); // Reset del messaggio spam
     
-    console.log(`🔄 Gioco resettato! Griglia: ${newGrid.length}x${newGrid.length}`);
-    
     // Reset della torre! 🏰
     if ((window as any).resetTower) {
       (window as any).resetTower();
     }
   };
 
-  // Funzione per ottenere i colori basati sul valore
+  // Funzione per ottenere i colori basati sul valore (zen ed eleganti)
   const getTileStyle = (value: number) => {
     const styles: Record<number, string> = {
-      0: 'bg-transparent text-transparent border-2 border-orange-300/50',
-      2: 'bg-gradient-to-br from-yellow-200 to-yellow-100 text-orange-800',
-      4: 'bg-gradient-to-br from-yellow-300 to-yellow-200 text-orange-900',
-      8: 'bg-gradient-to-br from-orange-300 to-orange-200 text-red-900',
-      16: 'bg-gradient-to-br from-orange-400 to-orange-300 text-red-900',
-      32: 'bg-gradient-to-br from-red-300 to-orange-400 text-white',
-      64: 'bg-gradient-to-br from-red-400 to-red-300 text-white',
-      128: 'bg-gradient-to-br from-red-500 to-red-400 text-white shadow-lg',
-      256: 'bg-gradient-to-br from-red-600 to-red-500 text-white shadow-lg',
-      512: 'bg-gradient-to-br from-red-700 to-red-600 text-white shadow-xl',
-      1024: 'bg-gradient-to-br from-red-800 to-red-700 text-yellow-200 shadow-xl',
-      2048: 'bg-gradient-to-br from-yellow-400 via-red-500 to-red-800 text-white shadow-2xl animate-pulse'
+      0: 'bg-gray-100 text-transparent border border-gray-200',
+      2: 'bg-yellow-100 text-yellow-800 tile-elegant',
+      4: 'bg-yellow-200 text-yellow-900 tile-elegant',
+      8: 'bg-orange-200 text-orange-900 tile-elegant',
+      16: 'bg-orange-300 text-orange-900 tile-elegant',
+      32: 'bg-red-300 text-red-900 tile-elegant',
+      64: 'bg-red-400 text-red-900 tile-elegant',
+      128: 'bg-red-500 text-white tile-elegant tile-shadow-elegant',
+      256: 'bg-red-600 text-white tile-elegant tile-shadow-elegant-lg',
+      512: 'bg-red-700 text-white tile-elegant tile-shadow-elegant-lg',
+      1024: 'bg-red-800 text-white tile-elegant tile-shadow-elegant-xl',
+      2048: 'bg-yellow-400 text-yellow-900 tile-elegant tile-shadow-elegant-xl animate-pulse'
     };
-    return styles[value] || 'bg-gradient-to-br from-red-900 to-red-800 text-yellow-200 shadow-2xl';
+    return styles[value] || 'bg-red-900 text-white tile-elegant tile-shadow-elegant-xl';
   };
 
   const getFontSize = (value: number) => {
-    if (value >= 1024) return 'text-2xl';
-    if (value >= 128) return 'text-3xl';
-    if (value >= 16) return 'text-4xl';
-    return 'text-5xl';
+    if (value >= 1024) return 'text-4xl';      // Molto più grande per numeri alti
+    if (value >= 128) return 'text-5xl';       // Enorme per milestone
+    if (value >= 16) return 'text-6xl';        // Gigante per valori medi
+    return 'text-7xl';                          // Colossale per 2 e 4
   };
 
   return (
     <div className="relative z-20 w-screen h-screen flex items-center justify-center p-8">
-      <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-md w-full">
+      <div className="bg-white/40 backdrop-blur-none rounded-3xl shadow-lg p-8 max-w-md w-full border border-red-100/50 transition-all duration-500">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 bg-clip-text text-transparent mb-2">
-            2048-TOWER
-          </h1>
-          <p className="text-lg text-gray-600 mb-4">by Francesco Marinuzzi, Ph.D.</p>
-          <div className="flex justify-between items-center mb-4">
+        <div className="mb-6">
+          <div className="mb-6">
+            <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048</h1>
+            <p className="text-sm text-gray-400 italic font-light text-center mb-4">Ver. Tower by F. Marinuzzi, Ph.D.</p>
+          </div>
+          
+          {/* Score, Best e New Game centrati con la scacchiera */}
+          <div className="flex justify-center items-center mb-6">
             <div className="flex space-x-3">
-              <div className="bg-gradient-to-r from-orange-400 to-red-400 text-white px-4 py-3 rounded-xl shadow-lg">
-                <div className="text-xs font-medium">SCORE</div>
-                <div className="text-xl font-bold">{score}</div>
+              <div className="bg-gradient-to-br from-yellow-100 to-orange-100 text-orange-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-orange-200">
+                <div className="text-xs font-medium text-orange-600 uppercase tracking-wide">Score</div>
+                <div className="text-xl font-black text-orange-900">{score}</div>
               </div>
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-3 rounded-xl shadow-lg">
-                <div className="text-xs font-medium">RECORD</div>
-                <div className="text-xl font-bold">{highScore}</div>
+              <div className="bg-gradient-to-br from-red-100 to-orange-100 text-red-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-red-200">
+                <div className="text-xs font-medium text-red-600 uppercase tracking-wide">Best</div>
+                <div className="text-xl font-black text-red-900">{highScore}</div>
               </div>
+              
+              {/* Bottone View Tower quadrato con sfondo chiaro */}
+              <button
+                onClick={() => {
+                  // Controlla se la funzione è disponibile e prova a mostrare la torre
+                  if ((window as any).setTowerView) {
+                    try {
+                      (window as any).setTowerView(true);
+                    } catch (error) {
+                      console.error('Errore nel mostrare la torre:', error);
+                    }
+                  } else {
+                    // Se non è disponibile, aspetta un momento e riprova
+                    setTimeout(() => {
+                      if ((window as any).setTowerView) {
+                        (window as any).setTowerView(true);
+                      }
+                    }, 100);
+                  }
+                }}
+                className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-4 rounded-lg shadow-md transition-all duration-200 font-bold border border-gray-300"
+                title="View Tower"
+                style={{ aspectRatio: '1' }}
+              >
+                ♖
+              </button>
+              
+              <button
+                onClick={resetGame}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-md transition-all duration-200 font-bold"
+              >
+                New
+              </button>
             </div>
-            <button
-              onClick={resetGame}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold"
-            >
-              NEW GAME
-            </button>
           </div>
         </div>
 
         {/* Grid */}
-        <div className="p-4 rounded-2xl mb-6">
+        <div className="p-6 rounded-2xl mb-6">
           <div 
-            className="grid gap-2 transition-all duration-300"
+            className="grid gap-3 transition-all duration-300"
             style={{ 
               gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
               gridTemplateRows: `repeat(${grid.length}, minmax(0, 1fr))`,
@@ -426,12 +410,13 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                 <div
                   key={`${i}-${j}`}
                   className={`
-                    aspect-square rounded-xl flex items-center justify-center font-bold transition-all duration-200 transform hover:scale-105
+                    aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-105
                     ${getTileStyle(cell)}
                     ${getFontSize(cell)}
+                    min-h-[60px] min-w-[60px]
                   `}
                   style={{
-                    fontSize: grid.length > 4 ? '0.75rem' : '1rem' // Font più piccolo per griglie grandi
+                    fontSize: grid.length > 4 ? '1rem' : '1.25rem' // Font più grande anche per griglie grandi
                   }}
                 >
                   {cell !== 0 && cell}
@@ -455,7 +440,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
             )}
           </div>
           
-          <p className="text-sm mb-2">Use arrow keys to move tiles</p>
+
         
           {/* Messaggio di velocità (bonus o penalità) */}
           {speedMessage && (
@@ -485,64 +470,15 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
             </div>
           )}
           
-          {/* Controlli direzionali */}
-          <div className="flex justify-center space-x-2 mb-4">
-            <div className="grid grid-cols-3 gap-1 w-32">
-              <div></div>
-              <button
-                onClick={() => handleMove('ArrowUp')}
-                className="bg-gradient-to-r from-orange-200 to-yellow-200 hover:from-orange-300 hover:to-yellow-300 p-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-              >
-                ↑
-              </button>
-              <div></div>
-              <button
-                onClick={() => handleMove('ArrowLeft')}
-                className="bg-gradient-to-r from-orange-200 to-yellow-200 hover:from-orange-300 hover:to-yellow-300 p-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-              >
-                ←
-              </button>
-              <div></div>
-              <button
-                onClick={() => handleMove('ArrowRight')}
-                className="bg-gradient-to-r from-orange-200 to-yellow-200 hover:from-orange-300 hover:to-yellow-300 p-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-              >
-                →
-              </button>
-              <div></div>
-              <button
-                onClick={() => handleMove('ArrowDown')}
-                className="bg-gradient-to-r from-orange-200 to-yellow-200 hover:from-orange-300 hover:to-yellow-300 p-2 rounded-lg transition-all duration-200 transform hover:scale-105"
-              >
-                ↓
-              </button>
-              <div></div>
-            </div>
+          {/* Controlli direzionali zen */}
+          <div className="text-center mb-6">
+            <p className="text-sm text-orange-600 font-medium">
+              Use arrows or WASD • Tip: ⌘/Ctrl + R to restart
+            </p>
           </div>
           
-          {/* Pulsanti Torre */}
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={() => {
-                if ((window as any).setTowerView) {
-                  (window as any).setTowerView(!showingTower);
-                }
-              }}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 font-bold"
-            >
-              {showingTower ? '🎮 Back to Game' : '🏰 View Tower'}
-            </button>
-            <button
-              onClick={() => {
-                if ((window as any).shareTower) {
-                  (window as any).shareTower();
-                }
-              }}
-              className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 border-2 border-yellow-500 px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 font-bold"
-            >
-              📤 Share Tower
-            </button>
-          </div>
+          {/* Spazio per futuri controlli se necessario */}
+          <div className="h-4"></div>
         </div>
 
         {/* Game Over/Win Overlay */}
@@ -563,8 +499,20 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
                   </p>
                   <button
                     onClick={() => {
+                      // Controlla se la funzione è disponibile e prova a mostrare la torre
                       if ((window as any).setTowerView) {
-                        (window as any).setTowerView(true);
+                        try {
+                          (window as any).setTowerView(true);
+                        } catch (error) {
+                          console.error('Errore nel mostrare la torre:', error);
+                        }
+                      } else {
+                        // Se non è disponibile, aspetta un momento e riprova
+                        setTimeout(() => {
+                          if ((window as any).setTowerView) {
+                            (window as any).setTowerView(true);
+                          }
+                        }, 100);
                       }
                     }}
                     className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg mb-3 w-full"

@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 interface TowerAppProps {
   onTileMerged?: (value: number, isSpeedBonus?: boolean) => void;
   onGameOver?: (finalScore: number, maxTile: number) => void;
+  showTowerView?: boolean;
 }
 
 interface Segment {
@@ -15,12 +16,12 @@ interface Segment {
   speedBonus?: boolean;
 }
 
-const TowerApp: React.FC<TowerAppProps> = () => {
+const TowerApp: React.FC<TowerAppProps> = ({ showTowerView: propShowTowerView = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [segments, setSegments] = useState<Segment[]>([]);
   const [cameraOffset, setCameraOffset] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [showTowerView, setShowTowerView] = useState(false);
+  const [showTowerView, setShowTowerView] = useState(propShowTowerView);
 
   const animationFrameRef = useRef<number>();
 
@@ -759,7 +760,7 @@ const TowerApp: React.FC<TowerAppProps> = () => {
         
         ctx.font = 'bold 12px serif';
         ctx.fillStyle = '#D2691E';
-        ctx.fillText('VITTORIA!', segmentX + segmentWidth/2, y + segmentHeight/2 + 10);
+        ctx.fillText('VICTORY!', segmentX + segmentWidth/2, y + segmentHeight/2 + 10);
         
         // Reset shadow
         ctx.shadowBlur = 0;
@@ -931,6 +932,11 @@ const TowerApp: React.FC<TowerAppProps> = () => {
     animationFrameRef.current = requestAnimationFrame(render);
   }, [render]);
 
+  // Sincronizza lo stato interno con la prop esterna
+  useEffect(() => {
+    setShowTowerView(propShowTowerView);
+  }, [propShowTowerView]);
+
   // Funzione per generare PNG (Share)
   const generateShareImage = useCallback(() => {
     const canvas = canvasRef.current;
@@ -953,23 +959,14 @@ const TowerApp: React.FC<TowerAppProps> = () => {
     }
   }, []);
 
-  // Toggle vista torre
-  const toggleTowerView = () => {
-    const newShowTowerView = !showTowerView;
-    setShowTowerView(newShowTowerView);
-    
-    // Notifica l'App del cambio di stato
-    if ((window as any).setTowerView) {
-      (window as any).setTowerView(newShowTowerView);
-    }
-  };
+
 
   return (
     <div className="absolute inset-0 w-screen h-screen overflow-hidden">
       <canvas
         ref={canvasRef}
-        className={`absolute inset-0 w-full h-full z-10 transition-all duration-700 ${
-          showTowerView ? 'blur-none opacity-100' : 'blur-none opacity-100'
+        className={`absolute inset-0 w-full h-full transition-all duration-700 ${
+          propShowTowerView ? 'z-20 blur-none opacity-100' : 'z-10 blur-none opacity-60'
         }`}
         style={{ pointerEvents: 'none' }}
       />
