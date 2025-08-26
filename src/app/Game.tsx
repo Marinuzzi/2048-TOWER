@@ -381,214 +381,216 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
   };
 
   return (
-    <div ref={containerRef} className="game-container">
-      <div className="relative z-20 w-screen h-screen flex items-center justify-center p-8">
-        <div className="bg-white/40 backdrop-blur-none rounded-3xl shadow-lg p-8 max-w-md w-full border border-red-100/50 transition-all duration-500">
-          {/* Header */}
-          <div className="mb-6">
+    <div className="game-container">
+      <div ref={containerRef} className="board">
+        <div className="relative z-20 w-screen h-screen flex items-center justify-center p-8">
+          <div className="bg-white/40 backdrop-blur-none rounded-3xl shadow-lg p-8 max-w-md w-full border border-red-100/50 transition-all duration-500">
+            {/* Header */}
             <div className="mb-6">
-              <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048-T</h1>
-              <p className="text-sm text-gray-400 italic font-light text-center mb-4">Ver. Tower by F. Marinuzzi, Ph.D.</p>
-            </div>
-            
-            {/* Score, Best e New Game centrati con la scacchiera */}
-            <div className="flex justify-center items-center mb-6">
-              <div className="flex space-x-3">
-                <div className="bg-white/40 backdrop-blur-none text-orange-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-orange-200/50 shadow-lg">
-                  <div className="text-xs font-medium text-orange-600 uppercase tracking-wide">Score</div>
-                  <div className="text-xl font-black text-orange-900">{score}</div>
-                </div>
-                <div className="bg-white/40 backdrop-blur-none text-red-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-red-200/50 shadow-lg">
-                  <div className="text-xs font-medium text-red-600 uppercase tracking-wide">Best</div>
-                  <div className="text-xl font-black text-red-900">{highScore}</div>
-                </div>
-                
-                {/* Bottone View Tower quadrato con sfondo chiaro */}
-                <button
-                  onClick={() => {
-                    // Controlla se la funzione è disponibile e prova a mostrare la torre
-                    if ((window as any).setTowerView) {
-                      try {
-                        (window as any).setTowerView(true);
-                      } catch (error) {
-                        console.error('Errore nel mostrare la torre:', error);
-                      }
-                    } else {
-                      // Se non è disponibile, aspetta un momento e riprova
-                      setTimeout(() => {
-                        if ((window as any).setTowerView) {
+              <div className="mb-6">
+                <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048-T</h1>
+                <p className="text-sm text-gray-400 italic font-light text-center mb-4">Ver. Tower by F. Marinuzzi, Ph.D.</p>
+              </div>
+              
+              {/* Score, Best e New Game centrati con la scacchiera */}
+              <div className="flex justify-center items-center mb-6">
+                <div className="flex space-x-3">
+                  <div className="bg-white/40 backdrop-blur-none text-orange-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-orange-200/50 shadow-lg">
+                    <div className="text-xs font-medium text-orange-600 uppercase tracking-wide">Score</div>
+                    <div className="text-xl font-black text-orange-900">{score}</div>
+                  </div>
+                  <div className="bg-white/40 backdrop-blur-none text-red-800 px-4 py-2 rounded-lg text-center min-w-[80px] border border-red-200/50 shadow-lg">
+                    <div className="text-xs font-medium text-red-600 uppercase tracking-wide">Best</div>
+                    <div className="text-xl font-black text-red-900">{highScore}</div>
+                  </div>
+                  
+                  {/* Bottone View Tower quadrato con sfondo chiaro */}
+                  <button
+                    onClick={() => {
+                      // Controlla se la funzione è disponibile e prova a mostrare la torre
+                      if ((window as any).setTowerView) {
+                        try {
                           (window as any).setTowerView(true);
+                        } catch (error) {
+                          console.error('Errore nel mostrare la torre:', error);
                         }
-                      }, 100);
-                    }
-                  }}
-                  className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-4 rounded-lg shadow-md transition-all duration-200 font-bold border border-gray-300"
-                  title="View Tower"
-                  style={{ aspectRatio: '1' }}
-                >
-                  ♖
-                </button>
-                
-                <button
-                  onClick={resetGame}
-                  className="bg-white/40 backdrop-blur-none hover:bg-white/60 text-green-800 px-6 py-2 rounded-lg shadow-lg transition-all duration-200 font-bold border border-green-200/50"
-                >
-                  New
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div className="p-6 rounded-2xl mb-6">
-            <div 
-              className="grid gap-3 transition-all duration-300"
-              style={{ 
-                gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
-                gridTemplateRows: `repeat(${grid.length}, minmax(0, 1fr))`,
-                width: '100%',
-                height: 'auto',
-                aspectRatio: '1'
-              }}
-            >
-              {grid.map((row, i) =>
-                row.map((cell, j) => (
-                  <div
-                    key={`${i}-${j}`}
-                    className={`
-                      aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-105
-                      ${getTileStyle(cell)}
-                      ${getFontSize(cell)}
-                      min-h-[60px] min-w-[60px]
-                    `}
-                    style={{
-                      fontSize: grid.length > 4 ? '1rem' : '1.25rem' // Font più grande anche per griglie grandi
+                      } else {
+                        // Se non è disponibile, aspetta un momento e riprova
+                        setTimeout(() => {
+                          if ((window as any).setTowerView) {
+                            (window as any).setTowerView(true);
+                          }
+                        }, 100);
+                      }
                     }}
+                    className="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 p-4 rounded-lg shadow-md transition-all duration-200 font-bold border border-gray-300"
+                    title="View Tower"
+                    style={{ aspectRatio: '1' }}
                   >
-                    {cell !== 0 && cell}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Timer e Controlli */}
-          <div className="text-center text-gray-600 mb-4">
-            {/* Timer del gioco */}
-            <div className="mb-3 space-y-2">
-              <div className="text-lg font-bold text-orange-600">
-                ⏱️ Total Time: {gameTime}s
+                    ♖
+                  </button>
+                  
+                  <button
+                    onClick={resetGame}
+                    className="bg-white/40 backdrop-blur-none hover:bg-white/60 text-green-800 px-6 py-2 rounded-lg shadow-lg transition-all duration-200 font-bold border border-green-200/50"
+                  >
+                    New
+                  </button>
+                </div>
               </div>
-              {lastMilestoneTime > 0 && (
-                <div className="text-md font-bold text-amber-800">
-                  ⚡ Since Last Level: {lastMilestoneTime}s
+            </div>
+
+            {/* Grid */}
+            <div className="p-6 rounded-2xl mb-6">
+              <div 
+                className="grid gap-3 transition-all duration-300"
+                style={{ 
+                  gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
+                  gridTemplateRows: `repeat(${grid.length}, minmax(0, 1fr))`,
+                  width: '100%',
+                  height: 'auto',
+                  aspectRatio: '1'
+                }}
+              >
+                {grid.map((row, i) =>
+                  row.map((cell, j) => (
+                    <div
+                      key={`${i}-${j}`}
+                      className={`
+                        aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-105
+                        ${getTileStyle(cell)}
+                        ${getFontSize(cell)}
+                        min-h-[60px] min-w-[60px]
+                      `}
+                      style={{
+                        fontSize: grid.length > 4 ? '1rem' : '1.25rem' // Font più grande anche per griglie grandi
+                      }}
+                    >
+                      {cell !== 0 && cell}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Timer e Controlli */}
+            <div className="text-center text-gray-600 mb-4">
+              {/* Timer del gioco */}
+              <div className="mb-3 space-y-2">
+                <div className="text-lg font-bold text-orange-600">
+                  ⏱️ Total Time: {gameTime}s
+                </div>
+                {lastMilestoneTime > 0 && (
+                  <div className="text-md font-bold text-amber-800">
+                    ⚡ Since Last Level: {lastMilestoneTime}s
+                  </div>
+                )}
+              </div>
+
+              {/* Pulsanti delle frecce direzionali */}
+              <div className="flex flex-col items-center gap-2 mt-4 mb-4">
+                <button onClick={() => handleMove('ArrowUp')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬆️</button>
+                <div className="flex gap-2">
+                  <button onClick={() => handleMove('ArrowLeft')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬅️</button>
+                  <button onClick={() => handleMove('ArrowRight')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">➡️</button>
+                </div>
+                <button onClick={() => handleMove('ArrowDown')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬇️</button>
+              </div>
+
+              {/* Messaggio di velocità (bonus o penalità) */}
+              {speedMessage && (
+                <div className={`text-sm font-bold mb-2 p-2 rounded-lg ${
+                  speedMessage.includes('Nuar a rí-han') 
+                    ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' 
+                    : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
+                }`}>
+                  {speedMessage}
                 </div>
               )}
-            </div>
-            
-
-          
-            {/* Messaggio di velocità (bonus o penalità) */}
-            {speedMessage && (
-              <div className={`text-sm font-bold mb-2 p-2 rounded-lg ${
-                speedMessage.includes('Nuar a rí-han') 
-                  ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' 
-                  : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
-              }`}>
-                {speedMessage}
-              </div>
-            )}
-            
-            {/* Messaggio spam o icona fulmine per giocatore esperto */}
-            {spamWarning && (
-              <div className="text-center mb-2">
-                {spamWarning.includes('Spam detected') ? (
-                  // Messaggio spam con stile rosso
-                  <div className="text-sm font-bold p-2 rounded-lg bg-red-100 text-red-800 border border-red-300">
-                    {spamWarning}
-                  </div>
-                ) : (
-                  // Solo icona fulmine per giocatore esperto
-                  <div className="text-2xl font-bold text-yellow-600 animate-pulse">
-                    {spamWarning}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* Controlli direzionali zen */}
-            <div className="text-center mb-6">
-              <p className="text-sm text-orange-600 font-medium">
-                Use arrows or WASD • Tip: ⌘/Ctrl + R to restart
-              </p>
-            </div>
-            
-            {/* Spazio per futuri controlli se necessario */}
-            <div className="h-4"></div>
-          </div>
-
-          {/* Game Over/Win Overlay */}
-          {(gameOver || gameWon) && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-gray-100 rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4">
-                <h2 className={`text-4xl font-bold mb-4 ${gameWon ? 'text-amber-800' : 'text-red-500'}`}>
-                  {gameWon ? 'YOU WIN! 🎉' : 'GAME OVER! 😔'}
-                </h2>
-                <p className="text-gray-600 mb-6 text-lg">
-                  Final Score: <span className="font-bold text-orange-600">{score}</span>
+              
+              {/* Messaggio spam o icona fulmine per giocatore esperto */}
+              {spamWarning && (
+                <div className="text-center mb-2">
+                  {spamWarning.includes('Spam detected') ? (
+                    // Messaggio spam con stile rosso
+                    <div className="text-sm font-bold p-2 rounded-lg bg-red-100 text-red-800 border border-red-300">
+                      {spamWarning}
+                    </div>
+                  ) : (
+                    // Solo icona fulmine per giocatore esperto
+                    <div className="text-2xl font-bold text-yellow-600 animate-pulse">
+                      {spamWarning}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Controlli direzionali zen */}
+              <div className="text-center mb-6">
+                <p className="text-sm text-orange-600 font-medium">
+                  Use arrows or WASD • Tip: ⌘/Ctrl + R to restart
                 </p>
-                
-                {gameWon && (
-                  <div className="mb-6">
-                    <p className="text-lg text-amber-800 font-bold mb-4">
-                      🏰 Your tower is complete! Admire its beauty! ✨
-                    </p>
-                    <button
-                      onClick={() => {
-                        // Controlla se la funzione è disponibile e prova a mostrare la torre
-                        if ((window as any).setTowerView) {
-                          try {
-                            (window as any).setTowerView(true);
-                          } catch (error) {
-                            console.error('Errore nel mostrare la torre:', error);
-                          }
-                        } else {
-                          // Se non è disponibile, aspetta un momento e riprova
-                          setTimeout(() => {
-                            if ((window as any).setTowerView) {
-                              (window as any).setTowerView(true);
-                            }
-                          }, 100);
-                        }
-                      }}
-                      className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg mb-3 w-full"
-                    >
-                      🏰 View Your Tower
-                    </button>
-                  </div>
-                )}
-                
-                <button
-                  onClick={resetGame}
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg"
-                >
-                  TRY AGAIN
-                </button>
               </div>
+              
+              {/* Spazio per futuri controlli se necessario */}
+              <div className="h-4"></div>
             </div>
-          )}
+
+            {/* Game Over/Win Overlay */}
+            {(gameOver || gameWon) && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-gray-100 rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4">
+                  <h2 className={`text-4xl font-bold mb-4 ${gameWon ? 'text-amber-800' : 'text-red-500'}`}>
+                    {gameWon ? 'YOU WIN! 🎉' : 'GAME OVER! 😔'}
+                  </h2>
+                  <p className="text-gray-600 mb-6 text-lg">
+                    Final Score: <span className="font-bold text-orange-600">{score}</span>
+                  </p>
+                  
+                  {gameWon && (
+                    <div className="mb-6">
+                      <p className="text-lg text-amber-800 font-bold mb-4">
+                        🏰 Your tower is complete! Admire its beauty! ✨
+                      </p>
+                      <button
+                        onClick={() => {
+                          // Controlla se la funzione è disponibile e prova a mostrare la torre
+                          if ((window as any).setTowerView) {
+                            try {
+                              (window as any).setTowerView(true);
+                            } catch (error) {
+                              console.error('Errore nel mostrare la torre:', error);
+                            }
+                          } else {
+                            // Se non è disponibile, aspetta un momento e riprova
+                            setTimeout(() => {
+                              if ((window as any).setTowerView) {
+                                (window as any).setTowerView(true);
+                              }
+                            }, 100);
+                          }
+                        }}
+                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg mb-3 w-full"
+                      >
+                        🏰 View Your Tower
+                      </button>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={resetGame}
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 font-bold text-lg"
+                  >
+                    TRY AGAIN
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Pulsanti delle frecce direzionali */}
-      <div className="controls">
-        <button onClick={() => handleMove('up')} className="arrow-button">⬆️</button>
-        <div>
-          <button onClick={() => handleMove('left')} className="arrow-button">⬅️</button>
-          <button onClick={() => handleMove('right')} className="arrow-button">➡️</button>
-        </div>
-        <button onClick={() => handleMove('down')} className="arrow-button">⬇️</button>
-      </div>
+
     </div>
   );
 };
