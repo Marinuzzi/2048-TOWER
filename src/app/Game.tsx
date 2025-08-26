@@ -389,6 +389,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
             <div className="mb-6">
               <div className="mb-6">
                 <h1 className="text-7xl font-black text-red-600 mb-2 tracking-tight text-center">2048-T</h1>
+                <h2 className="text-xl font-semibold text-red-500 text-center mb-2">Climb the Tower</h2>
                 <p className="text-sm text-gray-400 italic font-light text-center mb-4">Ver. Tower by F. Marinuzzi, Ph.D.</p>
               </div>
               
@@ -473,24 +474,12 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
               </div>
             </div>
 
-            {/* Timer e Controlli */}
+            {/* Controlli */}
             <div className="text-center text-gray-600 mb-4">
-              {/* Timer del gioco */}
-              <div className="mb-3 space-y-2">
-                <div className="text-lg font-bold text-orange-600">
-                  ⏱️ Total Time: {gameTime}s
-                </div>
-                {lastMilestoneTime > 0 && (
-                  <div className="text-md font-bold text-amber-800">
-                    ⚡ Since Last Level: {lastMilestoneTime}s
-                  </div>
-                )}
-              </div>
-
               {/* Pulsanti delle frecce direzionali */}
-              <div className="flex flex-col items-center gap-2 mt-4 mb-4">
+              <div className="flex flex-col items-center gap-1 mt-4 mb-4">
                 <button onClick={() => handleMove('ArrowUp')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬆️</button>
-                <div className="flex gap-2">
+                <div className="flex gap-16">
                   <button onClick={() => handleMove('ArrowLeft')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">⬅️</button>
                   <button onClick={() => handleMove('ArrowRight')} className="w-12 h-12 bg-white/40 backdrop-blur-none hover:bg-white/60 text-2xl rounded-lg shadow-lg transition-all duration-200 border border-gray-200/50">➡️</button>
                 </div>
