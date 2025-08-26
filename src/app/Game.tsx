@@ -218,6 +218,55 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleMove]);
 
+  // Rileva i gesti di swipe
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+    };
+
+    const handleTouchEnd = () => {
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        // Swipe orizzontale
+        if (diffX > 0) {
+          handleMove('right');
+        } else {
+          handleMove('left');
+        }
+      } else {
+        // Swipe verticale
+        if (diffY > 0) {
+          handleMove('down');
+        } else {
+          handleMove('up');
+        }
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [handleMove]);
+
 
 
   // Mostra automaticamente la torre quando si vince
