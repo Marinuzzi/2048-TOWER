@@ -218,7 +218,7 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleMove]);
 
-  // Rileva i gesti di swipe
+  // Rileva i gesti di swipe con maggiore sensibilità e log
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -228,29 +228,36 @@ const Game: React.FC<GameProps> = ({ onTileMerged, onGameOver }) => {
     const handleTouchStart = (e: TouchEvent) => {
       touchStartX = e.changedTouches[0].screenX;
       touchStartY = e.changedTouches[0].screenY;
+      console.log('Touch start:', touchStartX, touchStartY);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       touchEndX = e.changedTouches[0].screenX;
       touchEndY = e.changedTouches[0].screenY;
+      console.log('Touch move:', touchEndX, touchEndY);
     };
 
     const handleTouchEnd = () => {
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
+      console.log('Touch end:', diffX, diffY);
 
-      if (Math.abs(diffX) > Math.abs(diffY)) {
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 30) {
         // Swipe orizzontale
         if (diffX > 0) {
+          console.log('Swipe right');
           handleMove('right');
         } else {
+          console.log('Swipe left');
           handleMove('left');
         }
-      } else {
+      } else if (Math.abs(diffY) > 30) {
         // Swipe verticale
         if (diffY > 0) {
+          console.log('Swipe down');
           handleMove('down');
         } else {
+          console.log('Swipe up');
           handleMove('up');
         }
       }
